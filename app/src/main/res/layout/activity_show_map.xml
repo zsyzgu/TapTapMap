@@ -21,8 +21,18 @@
             android:id="@+id/big_category_spinner"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:paddingLeft="10dp"
             android:background="#FFFFFF"
             android:spinnerMode="dropdown"/>
+
+        <Spinner
+            android:id="@+id/mid_category_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:paddingLeft="10dp"
+            android:background="#FFFFFF"
+            android:spinnerMode="dropdown"/>
+
     </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout

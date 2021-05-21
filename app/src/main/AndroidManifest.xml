@@ -21,7 +21,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TapTapMap">
-        <activity android:name=".ShowSpinner"></activity>
+        <activity android:name=".ShowWeather"></activity>
 
         <meta-data
             android:name="com.amap.api.v2.apikey"

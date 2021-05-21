@@ -14,4 +14,7 @@
     <string name="geo_button">逆编码</string>
     <string name="poi_button">附近POI</string>
     <string name="locate_button">定位</string>
+    <string name="show_weather">显示天气</string>
+    <string name="show_weather_description">显示天气</string>
+    <string name="query_weather">查询天气</string>
 </resources>

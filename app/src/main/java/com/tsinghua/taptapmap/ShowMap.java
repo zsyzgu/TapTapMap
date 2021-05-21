@@ -60,6 +60,7 @@ public class ShowMap extends Activity {
     private Marker mCenterMarker;
     private PoiTable mPoiTable;
     private Spinner mBigCategorySpinner;
+    private Spinner mMidCategorySpinner;
 
     public class PoiTable {
         public class PoiCategory {
@@ -121,6 +122,16 @@ public class ShowMap extends Activity {
             return result;
         }
 
+        public ArrayList<PoiCategory> getMidCategory(PoiCategory bigCategory) {
+            ArrayList<PoiCategory> result = new ArrayList<PoiCategory>();
+            for (PoiCategory item : mPoiList) {
+                if (item.id % 100 == 0 && item.bigCategory.equals(bigCategory.bigCategory)) {
+                    result.add(item);
+                }
+            }
+            return result;
+        }
+
         public ArrayList<PoiCategory> getPoiList() {
             return mPoiList;
         }
@@ -174,7 +185,7 @@ public class ShowMap extends Activity {
     }
 
     private void updatePoiInfo(LatLonPoint latLonPoint) {
-        PoiSearch.Query query = new PoiSearch.Query(null, String.format("%06d",((PoiTable.PoiCategory)(mBigCategorySpinner.getSelectedItem())).id), null);
+        PoiSearch.Query query = new PoiSearch.Query(null, String.format("%06d",((PoiTable.PoiCategory)(mMidCategorySpinner.getSelectedItem())).id), null);
         query.setPageSize(20);
         query.setPageNum(0);
         mPoiSearch = new PoiSearch(ShowMap.this, query);
@@ -219,6 +230,18 @@ public class ShowMap extends Activity {
         updatePoiInfo(latLonPoint);
     }
 
+    private void initBigCategorySpinner() {
+        PoiAdapter mBigCategoryadapter = new PoiAdapter(mPoiTable.getBigCategory(), PoiAdapter.BIG);
+        mBigCategorySpinner.setAdapter(mBigCategoryadapter);
+        mBigCategorySpinner.setSelection(4, true);
+    }
+
+    private void initMidCategorySpinner() {
+        PoiAdapter mMidCategoryadapter = new PoiAdapter(mPoiTable.getMidCategory((PoiTable.PoiCategory)(mBigCategorySpinner.getSelectedItem())), PoiAdapter.MID);
+        mMidCategorySpinner.setAdapter(mMidCategoryadapter);
+        mMidCategorySpinner.setSelection(0,true);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -246,10 +269,22 @@ public class ShowMap extends Activity {
 
         mPoiTable = new PoiTable();
         mBigCategorySpinner = (Spinner) findViewById(R.id.big_category_spinner);
-        PoiAdapter mBigCategoryadapter = new PoiAdapter(mPoiTable.getBigCategory(), PoiAdapter.BIG);
-        mBigCategorySpinner.setAdapter(mBigCategoryadapter);
-        mBigCategorySpinner.setSelection(4, true);
+        initBigCategorySpinner();
         mBigCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                initMidCategorySpinner();
+                updatePoiInfoAtCameraPosition();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        mMidCategorySpinner = (Spinner) findViewById(R.id.mid_category_spinner);
+        initMidCategorySpinner();
+        mMidCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 updatePoiInfoAtCameraPosition();
