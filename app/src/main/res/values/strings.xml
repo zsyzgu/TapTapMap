@@ -17,4 +17,5 @@
     <string name="show_weather">显示天气</string>
     <string name="show_weather_description">显示天气</string>
     <string name="query_weather">查询天气</string>
+    <string name="meter_100">100 m</string>
 </resources>

@@ -14,6 +14,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
@@ -55,12 +56,16 @@ public class ShowMap extends Activity {
     private MapView mMapView;
     private AMap aMap;
     private Button mPoiButton;
+    private Spinner mBigCategorySpinner;
+    private Spinner mMidCategorySpinner;
+    private Spinner mSubCategorySpinner;
+    private TextView mSearchRadiusTv;
+    private SeekBar mSearchRadiusSeekbar;
     private TextView mPoiText;
     private PoiSearch mPoiSearch;
     private Marker mCenterMarker;
     private PoiTable mPoiTable;
-    private Spinner mBigCategorySpinner;
-    private Spinner mMidCategorySpinner;
+    private int mSearchRadius;
 
     public class PoiTable {
         public class PoiCategory {
@@ -132,6 +137,16 @@ public class ShowMap extends Activity {
             return result;
         }
 
+        public ArrayList<PoiCategory> getSubCategory(PoiCategory midCategory) {
+            ArrayList<PoiCategory> result = new ArrayList<PoiCategory>();
+            for (PoiCategory item : mPoiList) {
+                if (item.midCategory.equals(midCategory.midCategory)) {
+                    result.add(item);
+                }
+            }
+            return result;
+        }
+
         public ArrayList<PoiCategory> getPoiList() {
             return mPoiList;
         }
@@ -172,24 +187,37 @@ public class ShowMap extends Activity {
 
             TextView tv = (TextView)convertView;
             tv.setPadding(1,0,0,0);
+            String name = "";
+            int color = Color.BLACK;
             if (mGrading == BIG) {
-                tv.setText(mPoiList.get(position).bigCategory);
+                name = mPoiList.get(position).bigCategory;
             } else if (mGrading == MID) {
-                tv.setText(mPoiList.get(position).midCategory);
+                name = mPoiList.get(position).midCategory;
+                if (position == 0) {
+                    color = Color.LTGRAY;
+                }
             } else {
-                tv.setText(mPoiList.get(position).subCategory);
+                name = mPoiList.get(position).subCategory;
+                if (position == 0) {
+                    color = Color.LTGRAY;
+                }
             }
+            if (name.length() >= 6) {
+                name = name.substring(0, 6);
+            }
+            tv.setText(name);
+            tv.setTextColor(color);
 
             return convertView;
         }
     }
 
     private void updatePoiInfo(LatLonPoint latLonPoint) {
-        PoiSearch.Query query = new PoiSearch.Query(null, String.format("%06d",((PoiTable.PoiCategory)(mMidCategorySpinner.getSelectedItem())).id), null);
+        PoiSearch.Query query = new PoiSearch.Query(null, String.format("%06d",((PoiTable.PoiCategory)(mSubCategorySpinner.getSelectedItem())).id), null);
         query.setPageSize(20);
         query.setPageNum(0);
         mPoiSearch = new PoiSearch(ShowMap.this, query);
-        mPoiSearch.setBound(new PoiSearch.SearchBound(latLonPoint, 10000));
+        mPoiSearch.setBound(new PoiSearch.SearchBound(latLonPoint, mSearchRadius));
         mPoiSearch.setOnPoiSearchListener(new PoiSearch.OnPoiSearchListener() {
             @Override
             public void onPoiSearched(PoiResult result, int rcode) {
@@ -231,15 +259,36 @@ public class ShowMap extends Activity {
     }
 
     private void initBigCategorySpinner() {
-        PoiAdapter mBigCategoryadapter = new PoiAdapter(mPoiTable.getBigCategory(), PoiAdapter.BIG);
-        mBigCategorySpinner.setAdapter(mBigCategoryadapter);
+        PoiAdapter mBigCategoryAdapter = new PoiAdapter(mPoiTable.getBigCategory(), PoiAdapter.BIG);
+        mBigCategorySpinner.setAdapter(mBigCategoryAdapter);
         mBigCategorySpinner.setSelection(4, true);
     }
 
     private void initMidCategorySpinner() {
-        PoiAdapter mMidCategoryadapter = new PoiAdapter(mPoiTable.getMidCategory((PoiTable.PoiCategory)(mBigCategorySpinner.getSelectedItem())), PoiAdapter.MID);
-        mMidCategorySpinner.setAdapter(mMidCategoryadapter);
+        PoiAdapter mMidCategoryAdapter = new PoiAdapter(mPoiTable.getMidCategory((PoiTable.PoiCategory)(mBigCategorySpinner.getSelectedItem())), PoiAdapter.MID);
+        mMidCategorySpinner.setAdapter(mMidCategoryAdapter);
         mMidCategorySpinner.setSelection(0,true);
+    }
+
+    private void initSubCategorySpinner() {
+        PoiAdapter mSubCategoryAdapter = new PoiAdapter(mPoiTable.getSubCategory((PoiTable.PoiCategory)(mMidCategorySpinner.getSelectedItem())), PoiAdapter.SUB);
+        mSubCategorySpinner.setAdapter(mSubCategoryAdapter);
+        mSubCategorySpinner.setSelection(0, true);
+    }
+
+    private void syncSearchRadius() {
+        int progress = mSearchRadiusSeekbar.getProgress();
+        mSearchRadius = (progress + 1) * 100;
+        mSearchRadiusTv.setText(Integer.toString(mSearchRadius) + " m");
+        float textWidth = mSearchRadiusTv.getWidth();
+        float left = mSearchRadiusSeekbar.getLeft();
+        float max =Math.abs(mSearchRadiusSeekbar.getMax());
+        float scale = ShowMap.this.getResources().getDisplayMetrics().density;
+        float thumb = 15 * scale + 0.5f;
+        float average = (((float) mSearchRadiusSeekbar.getWidth())-2*thumb)/max;
+        float currentProgress = progress;
+        float pos_x = left - textWidth/2 +thumb + average * currentProgress;
+        mSearchRadiusTv.setX(pos_x);
     }
 
     @Override
@@ -251,6 +300,10 @@ public class ShowMap extends Activity {
         mPoiButton = (Button) findViewById(R.id.locate_button);
         mPoiText = (TextView) findViewById(R.id.poi_text);
         mBigCategorySpinner = (Spinner) findViewById(R.id.big_category_spinner);
+        mMidCategorySpinner = (Spinner) findViewById(R.id.mid_category_spinner);
+        mSubCategorySpinner = (Spinner) findViewById(R.id.sub_category_spinner);
+        mSearchRadiusTv = findViewById(R.id.tv_search_radius);
+        mSearchRadiusSeekbar = findViewById(R.id.search_radius_seekbar);
 
         MyLocationStyle myLocationStyle = new MyLocationStyle();
         myLocationStyle.interval(1000);
@@ -268,12 +321,14 @@ public class ShowMap extends Activity {
         mUiSettings.setScaleControlsEnabled(true);
 
         mPoiTable = new PoiTable();
-        mBigCategorySpinner = (Spinner) findViewById(R.id.big_category_spinner);
         initBigCategorySpinner();
+        initMidCategorySpinner();
+        initSubCategorySpinner();
         mBigCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 initMidCategorySpinner();
+                initSubCategorySpinner();
                 updatePoiInfoAtCameraPosition();
             }
 
@@ -282,9 +337,19 @@ public class ShowMap extends Activity {
 
             }
         });
-        mMidCategorySpinner = (Spinner) findViewById(R.id.mid_category_spinner);
-        initMidCategorySpinner();
         mMidCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                initSubCategorySpinner();
+                updatePoiInfoAtCameraPosition();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        mSubCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 updatePoiInfoAtCameraPosition();
@@ -293,6 +358,24 @@ public class ShowMap extends Activity {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 
+            }
+        });
+
+        syncSearchRadius();
+        mSearchRadiusSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                syncSearchRadius();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                updatePoiInfoAtCameraPosition();
             }
         });
 
