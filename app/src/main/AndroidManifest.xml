@@ -4,6 +4,7 @@
     package="com.tsinghua.taptapmap">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -21,7 +22,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TapTapMap">
-        <activity android:name=".ShowWeather"></activity>
+        <activity android:name=".DataCollection" />
+        <activity android:name=".ShowWeather" />
+        <activity android:name=".ShowMap" />
 
         <meta-data
             android:name="com.amap.api.v2.apikey"
@@ -34,7 +37,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ShowMap" />
     </application>
 
 </manifest>

@@ -73,6 +73,7 @@ public final class MainActivity extends ListActivity {
             new DemoDetails(R.string.map_functions, R.string.blank, null),
             new DemoDetails(R.string.show_map, R.string.show_map_description, ShowMap.class), // 显示地图
             new DemoDetails(R.string.show_weather, R.string.show_weather_description, ShowWeather.class), // 显示地图
+            new DemoDetails(R.string.data_collection, R.string.data_collection, DataCollection.class)
     };
 
     @Override
