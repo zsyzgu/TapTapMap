@@ -7,7 +7,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -29,7 +28,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -166,8 +164,6 @@ public class DataCollection extends Activity {
     public class CompleteSensorInfo extends Info{
         private List<Long> shouldSaveTime = new ArrayList<>();
 
-        private long lastTime = 0;
-
         // For complete data, keep 1min, 1 * 60 * 100 * 3 = 18k data
         private int size = 18000;
         private float[][] sensorData = new float[size][4];
@@ -179,9 +175,8 @@ public class DataCollection extends Activity {
             sensorData[size - 1][1] = y;
             sensorData[size - 1][2] = z;
             sensorData[size - 1][3] = (float)(time % 1000) * 100 + idx + 1;
-            lastTime = time;
             // save [-30s, 30s] sensor data
-            if (shouldSaveTime.size() > 0 && time - shouldSaveTime.get(0) > 30 * 1e3) {
+            if (shouldSaveTime.size() > 0 && System.currentTimeMillis() - shouldSaveTime.get(0) > 30 * 1e3) {
                 shouldSaveTime.remove(0);
                 new Thread(new Runnable() {
                     @Override
@@ -193,7 +188,7 @@ public class DataCollection extends Activity {
         }
 
         public void collectData() {
-            shouldSaveTime.add(lastTime);
+            shouldSaveTime.add(System.currentTimeMillis());
         }
     }
 
