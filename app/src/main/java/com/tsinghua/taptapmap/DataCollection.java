@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,7 +56,7 @@ public class DataCollection extends Activity {
             String filePath = "/storage/emulated/0/";
             String fileName = getClass().getName() + ".json";
             String result = (new Gson()).toJson(this);
-            mTvDataCollection.setText(mTvDataCollection.getText() + "\n" + result);
+//            mTvDataCollection.setText(mTvDataCollection.getText() + "\n" + result);
 
             try {
                 File file = new File(filePath);
@@ -162,60 +163,62 @@ public class DataCollection extends Activity {
         }
     }
 
-    public class CompleteSensorInfo extends Info {
-        long[] lastTime = new long[]{0, 0, 0};
-        int size = 18000;
+    public class CompleteSensorInfo extends Info{
+        private List<Long> shouldSaveTime = new ArrayList<>();
 
-        List<List<Float>> sensorData = new ArrayList<>();
-        List<Integer> sensorTime = new ArrayList<>();
+        private long lastTime = 0;
 
-        public void addSensorData(List<Float> info, int idx, long time) {
-            sensorData.add(info);
-            if (lastTime[idx] == 0)
-                lastTime[idx] = time - 10;
-            sensorTime.add((int)(time - lastTime[idx]) * 100 + idx + 1);
-            lastTime[idx] = time;
-            // For complete data, keep 1min, 1 * 60 * 100 * 3 = 18k data
-            if (sensorData.size() > size) {
-                sensorData.remove(0);
-                sensorTime.remove(0);
+        // For complete data, keep 1min, 1 * 60 * 100 * 3 = 18k data
+        private int size = 18000;
+        private float[][] sensorData = new float[size][4];
+
+        public void addSensorData(float x, float y, float z, int idx, long time) {
+            for (int i = 0; i < size - 1; i++)
+                System.arraycopy(sensorData[i + 1], 0, sensorData[i], 0, 4);
+            sensorData[size - 1][0] = x;
+            sensorData[size - 1][1] = y;
+            sensorData[size - 1][2] = z;
+            sensorData[size - 1][3] = (float)(time % 1000) * 100 + idx + 1;
+            lastTime = time;
+            // save [-30s, 30s] sensor data
+            if (shouldSaveTime.size() > 0 && time - shouldSaveTime.get(0) > 30 * 1e3) {
+                shouldSaveTime.remove(0);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        save();   // 保存数据到文件
+                    }
+                }).start();
             }
         }
 
-        @Override
         public void collectData() {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    save();   // 保存数据到文件
-                }
-            }, 30000);
+            shouldSaveTime.add(lastTime);
         }
     }
 
     public class SampledSensorInfo extends Info {
-        long[] lastTime = new long[]{0, 0, 0};
-        int size = 9000;
+        // For sampled data, keep 5min, 5 * 60 * 10 * 3 = 9k data
+        private int size = 9000;
+        private float[][] sensorData = new float[size][4];
 
-        List<List<Float>> sensorData = new ArrayList<>();
-        List<Integer> sensorTime = new ArrayList<>();
-
-        public void addSensorData(List<Float> info, int idx, long time) {
-            sensorData.add(info);
-            if (lastTime[idx] == 0)
-                lastTime[idx] = time - 10;
-            sensorTime.add((int)(time - lastTime[idx]) * 100 + idx + 1);
-            lastTime[idx] = time;
-            // For sampled data, keep 5min, 5 * 60 * 10 * 3 = 9k data
-            if (sensorData.size() > size) {
-                sensorData.remove(0);
-                sensorTime.remove(0);
-            }
+        public void addSensorData(float x, float y, float z, int idx, long time) {
+            for (int i = 0; i < size - 1; i++)
+                System.arraycopy(sensorData[i + 1], 0, sensorData[i], 0, 4);
+            sensorData[size - 1][0] = x;
+            sensorData[size - 1][1] = y;
+            sensorData[size - 1][2] = z;
+            sensorData[size - 1][3] = (float)(time % 1000) * 100 + idx + 1;
         }
 
         @Override
         public void collectData() {
-            save();   // 保存数据到文件
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    save();   // 保存数据到文件
+                }
+            }).start();
         }
     }
 
@@ -294,14 +297,11 @@ public class DataCollection extends Activity {
         @Override
         public void onSensorChanged(SensorEvent event) {
             // add complete
-            List<Float> info = new ArrayList<>();
-            for (int i = 0; i < event.values.length; i++)
-                info.add(event.values[i]);
-            completeSensorInfo.addSensorData(info, 0, (long)(event.timestamp / 1e6));
+            completeSensorInfo.addSensorData(event.values[0], event.values[1], event.values[2], 0, (long)(event.timestamp / 1e6));
             // add sampled
             count[0]++;
             if (count[0] >= 10) {
-                sampledSensorInfo.addSensorData(info, 0, (long) (event.timestamp / 1e6));
+                sampledSensorInfo.addSensorData(event.values[0], event.values[1], event.values[2], 0, (long)(event.timestamp / 1e6));
                 count[0] = 0;
             }
         }
@@ -316,14 +316,11 @@ public class DataCollection extends Activity {
         @Override
         public void onSensorChanged(SensorEvent event) {
             // add complete
-            List<Float> info = new ArrayList<>();
-            for (int i = 0; i < event.values.length; i++)
-                info.add(event.values[i]);
-            completeSensorInfo.addSensorData(info, 1, (long)(event.timestamp / 1e6));
+            completeSensorInfo.addSensorData(event.values[0], event.values[1], event.values[2], 1, (long)(event.timestamp / 1e6));
             // add sampled
             count[1]++;
             if (count[1] >= 10) {
-                sampledSensorInfo.addSensorData(info, 1, (long) (event.timestamp / 1e6));
+                sampledSensorInfo.addSensorData(event.values[0], event.values[1], event.values[2], 1, (long)(event.timestamp / 1e6));
                 count[1] = 0;
             }
         }
@@ -364,14 +361,11 @@ public class DataCollection extends Activity {
         SensorManager.getOrientation(rotationMatrix, orientationAngles);
         // orientationAngles 0 ~ 2: 方位角，俯仰角，倾侧角
         // add complete
-        List<Float> info = new ArrayList<>();
-        for (int i = 0; i < orientationAngles.length; i++)
-            info.add(orientationAngles[i]);
-        completeSensorInfo.addSensorData(info, 2, (long)(timestamp / 1e6));
+        completeSensorInfo.addSensorData(orientationAngles[0], orientationAngles[1], orientationAngles[2], 2, (long)(timestamp / 1e6));
         // add sampled
         count[2]++;
         if (count[2] >= 10) {
-            sampledSensorInfo.addSensorData(info, 2, (long) (timestamp / 1e6));
+            sampledSensorInfo.addSensorData(orientationAngles[0], orientationAngles[1], orientationAngles[2], 2, (long) (timestamp / 1e6));
             count[2] = 0;
         }
     }
@@ -388,8 +382,8 @@ public class DataCollection extends Activity {
     }
 
     private void collectData() {
-        new WeatherInfo().collectData(); // 收集天气数据，并附加在WeatherInfo.json中
-        new LocationInfo().collectData(); // 收集位置数据，并附加在LocationInfo.json中
+//        new WeatherInfo().collectData(); // 收集天气数据，并附加在WeatherInfo.json中
+//        new LocationInfo().collectData(); // 收集位置数据，并附加在LocationInfo.json中
         completeSensorInfo.collectData();
         sampledSensorInfo.collectData();
     }
