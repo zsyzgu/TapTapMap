@@ -177,6 +177,7 @@ public class DataCollection extends Activity {
             save(); // 保存数据到文件
         }
     }
+
     public class SystemInfo extends Info{
         //这个类由苏夏构建，包括了屏幕亮度，环境亮度，气压等属性，也包括了wifi以及蓝牙的信息
         private int screenBrightness;
@@ -339,7 +340,7 @@ public class DataCollection extends Activity {
                         e.printStackTrace();
                     }
                 }
-            },1000);
+            },10000);
 
         }
         protected void Save() throws JSONException {
@@ -563,5 +564,6 @@ public class DataCollection extends Activity {
     private void collectData() {
         new WeatherInfo().collectData(); // 收集天气数据，并附加在WeatherInfo.json中
         new LocationInfo().collectData(); // 收集位置数据，并附加在LocationInfo.json中
+        new SystemInfo().collectData();
     }
 }
