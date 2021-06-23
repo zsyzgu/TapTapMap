@@ -1,9 +1,6 @@
 package com.tsinghua.taptapmap;
 
 import android.app.Activity;
-
-
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -12,17 +9,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
-
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -55,10 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-
 import java.util.Set;
-
 
 public class DataCollection extends Activity {
     private Button mButtonDataCollection;
@@ -81,7 +71,7 @@ public class DataCollection extends Activity {
             String filePath = "/storage/emulated/0/";
             String fileName = getClass().getName() + ".json";
             String result = (new Gson()).toJson(this);
-//            mTvDataCollection.setText(mTvDataCollection.getText() + "\n" + result);
+            mTvDataCollection.setText(mTvDataCollection.getText() + "\n" + result);
 
             try {
                 File file = new File(filePath);
@@ -187,76 +177,6 @@ public class DataCollection extends Activity {
             save(); // 保存数据到文件
         }
     }
-
-
-    public class CompleteSensorInfo extends Info{
-        private List<Long> shouldSaveTime = new ArrayList<>();
-
-        // For complete data, keep 1min, 1 * 60 * 100 * 3 = 18k data
-        private int size = 18000;
-        private float[][] sensorData = new float[size][4];
-
-        public void addSensorData(float x, float y, float z, int idx, long time) {
-            for (int i = 0; i < size - 1; i++)
-                System.arraycopy(sensorData[i + 1], 0, sensorData[i], 0, 4);
-            sensorData[size - 1][0] = x;
-            sensorData[size - 1][1] = y;
-            sensorData[size - 1][2] = z;
-            sensorData[size - 1][3] = (float)(time % 1000) * 100 + idx + 1;
-            // save [-30s, 30s] sensor data
-            if (shouldSaveTime.size() > 0 && System.currentTimeMillis() - shouldSaveTime.get(0) > 30 * 1e3) {
-                shouldSaveTime.remove(0);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        save();   // 保存数据到文件
-                    }
-                }).start();
-            }
-        }
-
-        public void collectData() {
-            shouldSaveTime.add(System.currentTimeMillis());
-        }
-    }
-
-    public class SampledSensorInfo extends Info {
-        // For sampled data, keep 5min, 5 * 60 * 10 * 3 = 9k data
-        private int size = 9000;
-        private float[][] sensorData = new float[size][4];
-
-        public void addSensorData(float x, float y, float z, int idx, long time) {
-            for (int i = 0; i < size - 1; i++)
-                System.arraycopy(sensorData[i + 1], 0, sensorData[i], 0, 4);
-            sensorData[size - 1][0] = x;
-            sensorData[size - 1][1] = y;
-            sensorData[size - 1][2] = z;
-            sensorData[size - 1][3] = (float)(time % 1000) * 100 + idx + 1;
-        }
-
-        @Override
-        public void collectData() {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    save();   // 保存数据到文件
-                }
-            }).start();
-        }
-    }
-
-    // 传感器数据收集相关
-    private CompleteSensorInfo completeSensorInfo;
-    private SampledSensorInfo sampledSensorInfo;
-    private int[] count = new int[]{0, 0, 0};
-
-    private SensorManager sensorManager;
-    private int samplingPeriod = 10000;
-
-    private final float[] accMark = new float[3];
-    private final float[] magMark = new float[3];
-    private final float[] rotationMatrix = new float[9];
-    private final float[] orientationAngles = new float[3];
 
     public class SystemInfo extends Info{
         //这个类由苏夏构建，包括了屏幕亮度，环境亮度，气压等属性，也包括了wifi以及蓝牙的信息
@@ -594,7 +514,6 @@ public class DataCollection extends Activity {
     }
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -635,117 +554,16 @@ public class DataCollection extends Activity {
                 }
             }
         });
-
-        // 开启传感器监听&收集
-        completeSensorInfo = new CompleteSensorInfo();
-        sampledSensorInfo = new SampledSensorInfo();
-
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-
-        Sensor gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        Sensor linearAccSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-        Sensor accSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        Sensor magSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-
-        sensorManager.registerListener(gyroListener, gyroSensor, samplingPeriod);
-        sensorManager.registerListener(linearAccListener, linearAccSensor, samplingPeriod);
-        sensorManager.registerListener(accListener, accSensor, samplingPeriod);
-        sensorManager.registerListener(magListener, magSensor, samplingPeriod);
-    }
-
-    private SensorEventListener gyroListener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            // add complete
-            completeSensorInfo.addSensorData(event.values[0], event.values[1], event.values[2], 0, (long)(event.timestamp / 1e6));
-            // add sampled
-            count[0]++;
-            if (count[0] >= 10) {
-                sampledSensorInfo.addSensorData(event.values[0], event.values[1], event.values[2], 0, (long)(event.timestamp / 1e6));
-                count[0] = 0;
-            }
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-        }
-    };
-
-    private SensorEventListener linearAccListener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            // add complete
-            completeSensorInfo.addSensorData(event.values[0], event.values[1], event.values[2], 1, (long)(event.timestamp / 1e6));
-            // add sampled
-            count[1]++;
-            if (count[1] >= 10) {
-                sampledSensorInfo.addSensorData(event.values[0], event.values[1], event.values[2], 1, (long)(event.timestamp / 1e6));
-                count[1] = 0;
-            }
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-        }
-    };
-
-    private SensorEventListener accListener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            System.arraycopy(event.values, 0, accMark, 0, accMark.length);
-            updateOrientationAngles(event.timestamp);
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-        }
-    };
-
-    private SensorEventListener magListener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            System.arraycopy(event.values, 0, magMark, 0, magMark.length);
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-        }
-    };
-
-    public void updateOrientationAngles(long timestamp) {
-        SensorManager.getRotationMatrix(rotationMatrix, null, accMark, magMark);
-        SensorManager.getOrientation(rotationMatrix, orientationAngles);
-        // orientationAngles 0 ~ 2: 方位角，俯仰角，倾侧角
-        // add complete
-        completeSensorInfo.addSensorData(orientationAngles[0], orientationAngles[1], orientationAngles[2], 2, (long)(timestamp / 1e6));
-        // add sampled
-        count[2]++;
-        if (count[2] >= 10) {
-            sampledSensorInfo.addSensorData(orientationAngles[0], orientationAngles[1], orientationAngles[2], 2, (long) (timestamp / 1e6));
-            count[2] = 0;
-        }
     }
 
     private void stopService() {
         // 停止定位服务
         mLocationClient.stopLocation();
-        if (sensorManager != null) {
-            sensorManager.unregisterListener(gyroListener);
-            sensorManager.unregisterListener(linearAccListener);
-            sensorManager.unregisterListener(accListener);
-            sensorManager.unregisterListener(magListener);
-        }
     }
 
     private void collectData() {
-//        new WeatherInfo().collectData(); // 收集天气数据，并附加在WeatherInfo.json中
-//        new LocationInfo().collectData(); // 收集位置数据，并附加在LocationInfo.json中
-        completeSensorInfo.collectData();
+        new WeatherInfo().collectData(); // 收集天气数据，并附加在WeatherInfo.json中
+        new LocationInfo().collectData(); // 收集位置数据，并附加在LocationInfo.json中
         new SystemInfo().collectData();
-        sampledSensorInfo.collectData();
     }
 }

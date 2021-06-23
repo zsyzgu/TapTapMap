@@ -1,9 +1,9 @@
 package com.tsinghua.taptapmap;
 
 import android.app.Activity;
-
-
-
+<<<<<<< HEAD
+import android.content.Context;
+=======
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -12,17 +12,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-
+>>>>>>> suxia
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
-
+<<<<<<< HEAD
+=======
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-
+>>>>>>> suxia
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -55,10 +55,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-
+<<<<<<< HEAD
+=======
 import java.util.Set;
-
+>>>>>>> suxia
 
 public class DataCollection extends Activity {
     private Button mButtonDataCollection;
@@ -188,7 +188,7 @@ public class DataCollection extends Activity {
         }
     }
 
-
+<<<<<<< HEAD
     public class CompleteSensorInfo extends Info{
         private List<Long> shouldSaveTime = new ArrayList<>();
 
@@ -257,7 +257,7 @@ public class DataCollection extends Activity {
     private final float[] magMark = new float[3];
     private final float[] rotationMatrix = new float[9];
     private final float[] orientationAngles = new float[3];
-
+=======
     public class SystemInfo extends Info{
         //这个类由苏夏构建，包括了屏幕亮度，环境亮度，气压等属性，也包括了wifi以及蓝牙的信息
         private int screenBrightness;
@@ -593,7 +593,7 @@ public class DataCollection extends Activity {
         }
     }
 
-
+>>>>>>> suxia
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -742,10 +742,15 @@ public class DataCollection extends Activity {
     }
 
     private void collectData() {
+<<<<<<< HEAD
 //        new WeatherInfo().collectData(); // 收集天气数据，并附加在WeatherInfo.json中
 //        new LocationInfo().collectData(); // 收集位置数据，并附加在LocationInfo.json中
         completeSensorInfo.collectData();
-        new SystemInfo().collectData();
         sampledSensorInfo.collectData();
+=======
+        new WeatherInfo().collectData(); // 收集天气数据，并附加在WeatherInfo.json中
+        new LocationInfo().collectData(); // 收集位置数据，并附加在LocationInfo.json中
+        new SystemInfo().collectData();
+>>>>>>> suxia
     }
 }
