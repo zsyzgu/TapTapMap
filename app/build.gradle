@@ -47,4 +47,5 @@ dependencies {
     compile 'com.amap.api:location:latest.integration' //定位功能
     compile 'com.amap.api:search:latest.integration'
     compileOnly 'com.google.android.wearable:wearable:2.6.0'//搜索功能
+    compile 'com.alibaba:fastjson:1.2.73'
 }
