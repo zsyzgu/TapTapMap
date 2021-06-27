@@ -9,8 +9,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class TimerTrigger extends Trigger {
+
     public TimerTrigger(Context context, List<CollectorType> types) {
         super(context, types);
+    }
+
+    public TimerTrigger(Context context, CollectorType type) {
+        super(context, type);
     }
 
     @Override

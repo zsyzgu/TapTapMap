@@ -13,6 +13,8 @@ import com.tsinghua.taptapmap.collect.collector.NonIMUCollector;
 import com.tsinghua.taptapmap.collect.collector.SampledIMUCollector;
 import com.tsinghua.taptapmap.collect.collector.WifiCollector;
 import com.tsinghua.taptapmap.collect.data.NonIMUData;
+import com.tsinghua.taptapmap.collect.trigger.ClickTrigger;
+import com.tsinghua.taptapmap.collect.trigger.TimerTrigger;
 import com.tsinghua.taptapmap.collect.trigger.Trigger;
 
 public class DataCollection extends Activity {
@@ -20,19 +22,8 @@ public class DataCollection extends Activity {
     private TextView mTvDataCollection;
 
     // 传感器数据收集相关
-    private CompleteIMUCollector completeIMUCollector;
-    /*
-    private SampledIMUCollector sampledIMUCollector;
-    private LocationCollector locationCollector;
-
-    private WifiCollector wifiCollector;
-    private BluetoothCollector bluetoothCollector;
-
-    private NonIMUCollector nonIMUCollector;
-
-    private final int samplingPeriod = 10000;
-     */
-    Trigger trigger;
+    ClickTrigger clickTrigger;
+    TimerTrigger timerTrigger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,18 +46,15 @@ public class DataCollection extends Activity {
     }
 
     private void initService() {
-        trigger = new Trigger(this, Trigger.CollectorType.CompleteIMU);
-
-
-        // completeIMUCollector = new CompleteIMUCollector(this, 10000, 1);
+        clickTrigger = new ClickTrigger(this, Trigger.CollectorType.CompleteIMU);
+        timerTrigger = new TimerTrigger(this, Trigger.CollectorType.All);
     }
 
     private void stopService() {
     }
 
     private void collectData() {
-        trigger.trigger();
-        // completeIMUCollector.collect();
-        // nonIMUCollector.collect();
+        clickTrigger.trigger();
+        timerTrigger.trigger();
     }
 }
