@@ -1,28 +1,38 @@
 package com.tsinghua.taptapmap;
 
 import android.app.Activity;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.tsinghua.taptapmap.collect.collector.CompleteSensorCollector;
+import com.tsinghua.taptapmap.collect.collector.BluetoothCollector;
+import com.tsinghua.taptapmap.collect.collector.CompleteIMUCollector;
 import com.tsinghua.taptapmap.collect.collector.LocationCollector;
-import com.tsinghua.taptapmap.collect.collector.SampledSensorCollector;
+import com.tsinghua.taptapmap.collect.collector.NonIMUCollector;
+import com.tsinghua.taptapmap.collect.collector.SampledIMUCollector;
+import com.tsinghua.taptapmap.collect.collector.WifiCollector;
+import com.tsinghua.taptapmap.collect.data.NonIMUData;
+import com.tsinghua.taptapmap.collect.trigger.Trigger;
 
 public class DataCollection extends Activity {
     private Button mButtonDataCollection;
     private TextView mTvDataCollection;
 
     // 传感器数据收集相关
-    private CompleteSensorCollector completeSensorInfo;
-    private SampledSensorCollector sampledSensorInfo;
+    private CompleteIMUCollector completeIMUCollector;
+    /*
+    private SampledIMUCollector sampledIMUCollector;
     private LocationCollector locationCollector;
 
-    private SensorManager sensorManager;
+    private WifiCollector wifiCollector;
+    private BluetoothCollector bluetoothCollector;
+
+    private NonIMUCollector nonIMUCollector;
 
     private final int samplingPeriod = 10000;
+     */
+    Trigger trigger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +42,9 @@ public class DataCollection extends Activity {
         mTvDataCollection = findViewById(R.id.tv_data_collection);
         initService();
 
-        mButtonDataCollection.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mTvDataCollection.setText("");
-                collectData();
-            }
+        mButtonDataCollection.setOnClickListener(v -> {
+            mTvDataCollection.setText("");
+            collectData();
         });
     }
 
@@ -48,20 +55,18 @@ public class DataCollection extends Activity {
     }
 
     private void initService() {
-        completeSensorInfo = new CompleteSensorCollector(this, samplingPeriod, 1);
-        completeSensorInfo.initialize();
-        sampledSensorInfo = new SampledSensorCollector(this, samplingPeriod, 10);
-        sampledSensorInfo.initialize();
-        locationCollector = new LocationCollector(this);
-        locationCollector.initialize();
+        trigger = new Trigger(this, Trigger.CollectorType.CompleteIMU);
+
+
+        // completeIMUCollector = new CompleteIMUCollector(this, 10000, 1);
     }
 
     private void stopService() {
     }
 
     private void collectData() {
-        // completeSensorInfo.collect();
-        // sampledSensorInfo.collect();
-        locationCollector.collect();
+        trigger.trigger();
+        // completeIMUCollector.collect();
+        // nonIMUCollector.collect();
     }
 }

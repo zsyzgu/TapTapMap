@@ -18,6 +18,7 @@ public abstract class Collector {
         queryTime = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss:SSS").format(new Date());
         mContext = context;
         saver = new Saver(mContext, getSaveFolderName());
+        initialize();
     }
 
     public abstract void initialize();

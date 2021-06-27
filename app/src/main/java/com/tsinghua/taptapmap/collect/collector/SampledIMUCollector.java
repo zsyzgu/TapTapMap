@@ -4,29 +4,30 @@ import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.util.Log;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Process;
 
-import com.alibaba.fastjson.JSON;
-import com.tsinghua.taptapmap.collect.data.SensorData;
-import com.tsinghua.taptapmap.collect.sensor.PeriodicSensorEventListener;
+import com.tsinghua.taptapmap.collect.data.IMUData;
+import com.tsinghua.taptapmap.collect.listener.PeriodicSensorEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class SampledSensorCollector extends SensorCollector {
+public class SampledIMUCollector extends SensorCollector {
     // For sampled data, keep 5min, 5 * 60 * 10 * 4 = 12k data
     private final int size = 12000;
 
     private final int samplingPeriod;
     private final int collectPeriod;
 
-    private SensorData data;
+    private IMUData data;
 
-    public SampledSensorCollector(Context context, int samplingPeriod, int collectPeriod) {
+    public SampledIMUCollector(Context context, int samplingPeriod, int collectPeriod) {
         super(context);
         this.samplingPeriod = samplingPeriod;
         this.collectPeriod = collectPeriod;
-        this.data = new SensorData();
+        this.data = new IMUData();
     }
 
     public synchronized void addSensorData(float x, float y, float z, int idx, long time) {
@@ -38,24 +39,33 @@ public class SampledSensorCollector extends SensorCollector {
         // Log.e("DATAdd", JSON.toJSONString(data));
     }
 
+    private PeriodicSensorEventListener gyroListener;
+    private PeriodicSensorEventListener linearAccListener;
+    private PeriodicSensorEventListener accListener;
+    private PeriodicSensorEventListener magListener;
+
     @Override
     public void initialize() {
-        SensorManager sensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
+        sensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
 
         Sensor gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         Sensor linearAccSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         Sensor accSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         Sensor magSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
-        SensorEventListener gyroListener = new PeriodicSensorEventListener(this, Sensor.TYPE_GYROSCOPE, collectPeriod);
-        SensorEventListener linearAccListener = new PeriodicSensorEventListener(this, Sensor.TYPE_LINEAR_ACCELERATION, collectPeriod);
-        SensorEventListener accListener = new PeriodicSensorEventListener(this, Sensor.TYPE_ACCELEROMETER, collectPeriod);
-        SensorEventListener magListener = new PeriodicSensorEventListener(this, Sensor.TYPE_MAGNETIC_FIELD, collectPeriod);
+        gyroListener = new PeriodicSensorEventListener(this, Sensor.TYPE_GYROSCOPE, collectPeriod);
+        linearAccListener = new PeriodicSensorEventListener(this, Sensor.TYPE_LINEAR_ACCELERATION, collectPeriod);
+        accListener = new PeriodicSensorEventListener(this, Sensor.TYPE_ACCELEROMETER, collectPeriod);
+        magListener = new PeriodicSensorEventListener(this, Sensor.TYPE_MAGNETIC_FIELD, collectPeriod);
 
-        sensorManager.registerListener(gyroListener, gyroSensor, samplingPeriod);
-        sensorManager.registerListener(linearAccListener, linearAccSensor, samplingPeriod);
-        sensorManager.registerListener(accListener, accSensor, samplingPeriod);
-        sensorManager.registerListener(magListener, magSensor, samplingPeriod);
+        sensorThread = new HandlerThread("Sampled Thread", Process.THREAD_PRIORITY_MORE_FAVORABLE);
+        sensorThread.start();
+        sensorHandler = new Handler(sensorThread.getLooper());
+
+        sensorManager.registerListener(gyroListener, gyroSensor, samplingPeriod, sensorHandler);
+        sensorManager.registerListener(linearAccListener, linearAccSensor, samplingPeriod, sensorHandler);
+        sensorManager.registerListener(accListener, accSensor, samplingPeriod, sensorHandler);
+        sensorManager.registerListener(magListener, magSensor, samplingPeriod, sensorHandler);
     }
 
     @Override
@@ -65,12 +75,16 @@ public class SampledSensorCollector extends SensorCollector {
 
     @Override
     public void close() {
-
+        sensorManager.unregisterListener(gyroListener);
+        sensorManager.unregisterListener(linearAccListener);
+        sensorManager.unregisterListener(accListener);
+        sensorManager.unregisterListener(magListener);
+        sensorThread.quitSafely();
     }
 
     @Override
     protected String getSaveFolderName() {
-        return "SampledSensor";
+        return "SampledIMU";
     }
 }
     /*

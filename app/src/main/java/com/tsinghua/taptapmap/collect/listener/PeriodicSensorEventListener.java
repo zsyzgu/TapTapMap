@@ -1,8 +1,9 @@
-package com.tsinghua.taptapmap.collect.sensor;
+package com.tsinghua.taptapmap.collect.listener;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.util.Log;
 
 import com.tsinghua.taptapmap.collect.collector.SensorCollector;
 
@@ -23,12 +24,14 @@ public class PeriodicSensorEventListener implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        this.collector.addSensorData(event.values[0], event.values[1], event.values[2], sensorType, (long)(event.timestamp / 1e6));
+        /*
         if (counter == 0) {
-            this.collector.addSensorData(event.values[0], event.values[1], event.values[2], sensorType, (long)(event.timestamp / 1e6));
             counter = period - 1;
         } else {
             counter -= 1;
         }
+         */
     }
 
     @Override

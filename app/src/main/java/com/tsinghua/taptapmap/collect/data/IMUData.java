@@ -3,7 +3,7 @@ package com.tsinghua.taptapmap.collect.data;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SensorData {
+public class IMUData {
     private List<List<Float>> data = new ArrayList<>();
 
     public List<List<Float>> getData() {
