@@ -27,8 +27,8 @@ public class CompleteIMUCollector extends SensorCollector {
     private IMUData data = null;
 
 
-    public CompleteIMUCollector(Context context, int samplingPeriod, int collectPeriod) {
-        super(context);
+    public CompleteIMUCollector(Context context, String triggerFolder, int samplingPeriod, int collectPeriod) {
+        super(context, triggerFolder);
         this.samplingPeriod = samplingPeriod;
         this.collectPeriod = collectPeriod;
         this.data = new IMUData();

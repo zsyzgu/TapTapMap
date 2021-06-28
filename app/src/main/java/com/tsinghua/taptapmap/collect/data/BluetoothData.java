@@ -22,8 +22,6 @@ public class BluetoothData {
 
     public void insert(SingleBluetoothData single) {
         for (int i = 0; i < data.size(); i++) {
-            Log.e("blue", String.valueOf(i));
-            Log.e("blue", data.get(i).getName());
             if (data.get(i).getName().equals(single.getName())) {
                 data.set(i, single);
                 return;

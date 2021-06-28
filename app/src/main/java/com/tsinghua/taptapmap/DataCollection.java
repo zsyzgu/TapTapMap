@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.tsinghua.taptapmap.collect.collector.BluetoothCollector;
 import com.tsinghua.taptapmap.collect.collector.CompleteIMUCollector;
+import com.tsinghua.taptapmap.collect.collector.LocationClient;
 import com.tsinghua.taptapmap.collect.collector.LocationCollector;
 import com.tsinghua.taptapmap.collect.collector.NonIMUCollector;
 import com.tsinghua.taptapmap.collect.collector.SampledIMUCollector;
@@ -21,7 +22,6 @@ public class DataCollection extends Activity {
     private Button mButtonDataCollection;
     private TextView mTvDataCollection;
 
-    // 传感器数据收集相关
     ClickTrigger clickTrigger;
     TimerTrigger timerTrigger;
 
@@ -31,12 +31,11 @@ public class DataCollection extends Activity {
         setContentView(R.layout.activity_data_collection);
         mButtonDataCollection = findViewById(R.id.button_data_collection);
         mTvDataCollection = findViewById(R.id.tv_data_collection);
-        initService();
-
         mButtonDataCollection.setOnClickListener(v -> {
             mTvDataCollection.setText("");
             collectData();
         });
+        initService();
     }
 
     @Override
@@ -46,8 +45,9 @@ public class DataCollection extends Activity {
     }
 
     private void initService() {
-        clickTrigger = new ClickTrigger(this, Trigger.CollectorType.CompleteIMU);
+        clickTrigger = new ClickTrigger(getApplicationContext(), Trigger.CollectorType.NonIMU);
         timerTrigger = new TimerTrigger(this, Trigger.CollectorType.All);
+        timerTrigger.trigger();
     }
 
     private void stopService() {
@@ -55,6 +55,5 @@ public class DataCollection extends Activity {
 
     private void collectData() {
         clickTrigger.trigger();
-        timerTrigger.trigger();
     }
 }

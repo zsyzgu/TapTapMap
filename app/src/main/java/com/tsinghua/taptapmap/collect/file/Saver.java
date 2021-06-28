@@ -20,8 +20,8 @@ public class Saver {
     private String saveFolder;
     private Executor pool;
 
-    public Saver(Context context, String saveFolderName) {
-        this.saveFolder = context.getExternalMediaDirs()[0].getAbsolutePath() + "/" + saveFolderName;
+    public Saver(Context context, String triggerFolder, String saveFolderName) {
+        this.saveFolder = context.getExternalMediaDirs()[0].getAbsolutePath() + "/" + triggerFolder + "/" + saveFolderName;
         this.pool = new ThreadPoolExecutor(1, 1,
                 60, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<>(3),

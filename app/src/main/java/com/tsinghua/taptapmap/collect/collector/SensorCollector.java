@@ -12,8 +12,8 @@ public abstract class SensorCollector extends Collector {
     protected Handler sensorHandler;
     protected SensorManager sensorManager;
 
-    public SensorCollector(Context context) {
-        super(context);
+    public SensorCollector(Context context, String triggerFolder) {
+        super(context, triggerFolder);
     }
 
     public abstract void addSensorData(float x, float y, float z, int idx, long time);

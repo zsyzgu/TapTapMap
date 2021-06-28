@@ -17,10 +17,13 @@ public class ClickTrigger extends Trigger {
 
     @Override
     public void trigger() {
-        new Thread(() -> {
-            for (Collector collector: collectors) {
-                collector.collect();
-            }
-        }).start();
+        for (Collector collector: collectors) {
+            collector.collect();
+        }
+    }
+
+    @Override
+    public String getName() {
+        return "Click";
     }
 }

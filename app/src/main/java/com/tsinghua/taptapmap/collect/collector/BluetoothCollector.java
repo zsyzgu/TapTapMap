@@ -19,8 +19,8 @@ public class BluetoothCollector extends Collector {
 
     private BluetoothData data;
 
-    public BluetoothCollector(Context context) {
-        super(context);
+    public BluetoothCollector(Context context, String triggerFolder) {
+        super(context, triggerFolder);
         data = new BluetoothData();
     }
 

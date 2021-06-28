@@ -16,6 +16,22 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        debug {
+            storePassword '123456'
+            keyAlias = 'key0'
+            keyPassword '123456'
+            storeFile file('E:\\camera\\TapTapMap\\taptapmap.jks')
+        }
+        sign {
+            storePassword '123456'
+            keyAlias = 'key0'
+            keyPassword '123456'
+            storeFile file('E:\\camera\\TapTapMap\\taptapmap.jks')
+        }
+    }
+
+
     buildTypes {
         release {
             minifyEnabled false

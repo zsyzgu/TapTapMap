@@ -10,13 +10,10 @@ import com.tsinghua.taptapmap.collect.data.LocationData;
 public class LocationCollector extends Collector {
     private LocationClient client;
 
-    private Context mContext;
-
     private LocationData data;
 
-    public LocationCollector(Context context) {
-        super(context);
-        this.mContext = context;
+    public LocationCollector(Context context, String triggerFolder) {
+        super(context, triggerFolder);
     }
 
     @Override
@@ -26,10 +23,8 @@ public class LocationCollector extends Collector {
 
     @Override
     public void collect() {
-        //TODO: context.location.trafficInformation
-        //TODO: context.location.direction
-        AMapLocation mLocation = client.mLocation.clone();
-        if (mLocation != null) {
+        if (client.mLocation != null) {
+            AMapLocation mLocation = client.mLocation.clone();
             data = new LocationData(
                     mLocation.getLongitude(),
                     mLocation.getLatitude(),

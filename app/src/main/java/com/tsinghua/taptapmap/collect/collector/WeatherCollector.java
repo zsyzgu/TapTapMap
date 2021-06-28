@@ -14,14 +14,10 @@ public class WeatherCollector extends Collector {
 
     private LocationClient client;
 
-    private Context mContext;
-
     private WeatherData data;
 
-    public WeatherCollector(Context context) {
-        super(context);
-        this.mContext = context;
-        this.data = null;
+    public WeatherCollector(Context context, String triggerFolder) {
+        super(context, triggerFolder);
     }
 
     @Override
@@ -31,8 +27,8 @@ public class WeatherCollector extends Collector {
 
     @Override
     public synchronized void collect() {
-        AMapLocation mLocation = client.mLocation.clone();
-        if (mLocation != null && !mLocation.getCity().equals("")) {
+        if (client.mLocation != null && !client.mLocation.getCity().equals("")) {
+            AMapLocation mLocation = client.mLocation.clone();
             WeatherSearchQuery queryLive = new WeatherSearchQuery(mLocation.getCity(), WeatherSearchQuery.WEATHER_TYPE_LIVE);
             WeatherSearch weatherSearchLive = new WeatherSearch(mContext);
             weatherSearchLive.setOnWeatherSearchListener(new WeatherSearch.OnWeatherSearchListener() {

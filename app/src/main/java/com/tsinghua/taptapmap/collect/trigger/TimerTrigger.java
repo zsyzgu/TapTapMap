@@ -29,4 +29,9 @@ public class TimerTrigger extends Trigger {
             }
         }, 5000, 600000);
     }
+
+    @Override
+    public String getName() {
+        return "Timer";
+    }
 }

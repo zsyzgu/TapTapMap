@@ -21,8 +21,8 @@ public class WifiCollector extends Collector {
 
     private WifiData data;
 
-    public WifiCollector(Context context) {
-        super(context);
+    public WifiCollector(Context context, String triggerFolder) {
+        super(context, triggerFolder);
         this.data = new WifiData();
     }
 

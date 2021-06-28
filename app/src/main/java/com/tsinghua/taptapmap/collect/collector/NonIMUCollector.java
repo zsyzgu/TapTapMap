@@ -16,24 +16,26 @@ public class NonIMUCollector extends SensorCollector {
 
     private NonIMUData data;
 
-    public NonIMUCollector(Context context) {
-        super(context);
+    public NonIMUCollector(Context context, String triggerFolder) {
+        super(context, triggerFolder);
         data = new NonIMUData();
     }
 
     @Override
-    public void addSensorData(float x, float y, float z, int idx, long time) {
-        switch (idx) {
-            case Sensor.TYPE_PRESSURE:
-                data.setAirPressure(x);
-                data.setAirPressureTimestamp(time);
-                break;
-            case Sensor.TYPE_LIGHT:
-                data.setEnvironmentBrightness(x);
-                data.setEnvironmentBrightnessTimestamp(time);
-                break;
-            default:
-                break;
+    public synchronized void addSensorData(float x, float y, float z, int idx, long time) {
+        if (data != null) {
+            switch (idx) {
+                case Sensor.TYPE_PRESSURE:
+                    data.setAirPressure(x);
+                    data.setAirPressureTimestamp(time);
+                    break;
+                case Sensor.TYPE_LIGHT:
+                    data.setEnvironmentBrightness(x);
+                    data.setEnvironmentBrightnessTimestamp(time);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
@@ -58,7 +60,7 @@ public class NonIMUCollector extends SensorCollector {
     }
 
     @Override
-    public void collect() {
+    public synchronized void collect() {
         data.setScreenBrightness(Settings.System.getInt(mContext.getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,125));
         data.setScreenBrightnessTimestamp(System.currentTimeMillis());
         saver.save(data);

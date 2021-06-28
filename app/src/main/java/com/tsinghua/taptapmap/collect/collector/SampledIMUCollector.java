@@ -23,20 +23,21 @@ public class SampledIMUCollector extends SensorCollector {
 
     private IMUData data;
 
-    public SampledIMUCollector(Context context, int samplingPeriod, int collectPeriod) {
-        super(context);
+    public SampledIMUCollector(Context context, String triggerFolder, int samplingPeriod, int collectPeriod) {
+        super(context, triggerFolder);
         this.samplingPeriod = samplingPeriod;
         this.collectPeriod = collectPeriod;
         this.data = new IMUData();
     }
 
     public synchronized void addSensorData(float x, float y, float z, int idx, long time) {
-        data.insert(new ArrayList<>(Arrays.asList(
-                x, y, z,
-                (float) (time % 1000),
-                (float) idx
-        )), size);
-        // Log.e("DATAdd", JSON.toJSONString(data));
+        if (data != null) {
+            data.insert(new ArrayList<>(Arrays.asList(
+                    x, y, z,
+                    (float) (time % 1000),
+                    (float) idx
+            )), size);
+        }
     }
 
     private PeriodicSensorEventListener gyroListener;
