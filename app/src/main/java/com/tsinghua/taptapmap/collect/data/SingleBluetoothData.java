@@ -9,10 +9,11 @@ public class SingleBluetoothData {
     private int type;
     private int deviceClass;
     private int majorDeviceClass;
+    private boolean linked;
 
     public SingleBluetoothData(String name, String address,
                                int bondState, int type,
-                               int deviceClass, int majorDeviceClass) {
+                               int deviceClass, int majorDeviceClass, boolean linked) {
         if (name == null) {
             this.name = "NULL";
         } else {
@@ -27,6 +28,7 @@ public class SingleBluetoothData {
         this.type = type;
         this.deviceClass = deviceClass;
         this.majorDeviceClass = majorDeviceClass;
+        this.linked = linked;
     }
 
     public int getBondState() {
@@ -51,6 +53,10 @@ public class SingleBluetoothData {
 
     public int getMajorDeviceClass() {
         return majorDeviceClass;
+    }
+
+    public boolean getLinked() {
+        return linked;
     }
 
     public void setAddress(String address) {
@@ -83,5 +89,9 @@ public class SingleBluetoothData {
 
     public void setMajorDeviceClass(int majorDeviceClass) {
         this.majorDeviceClass = majorDeviceClass;
+    }
+
+    public void setLinked(boolean linked) {
+        this.linked = linked;
     }
 }

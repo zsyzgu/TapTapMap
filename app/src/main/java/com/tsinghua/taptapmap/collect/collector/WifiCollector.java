@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
@@ -44,7 +45,7 @@ public class WifiCollector extends Collector {
                                     result.level, result.frequency,
                                     result.timestamp,
                                     result.channelWidth,
-                                    result.centerFreq0, result.centerFreq1));
+                                    result.centerFreq0, result.centerFreq1, false));
                         }
                     }
                 }
@@ -55,6 +56,15 @@ public class WifiCollector extends Collector {
     @Override
     public synchronized void collect() {
         data.clear();
+        WifiInfo info = wifiManager.getConnectionInfo();
+        if (info != null) {
+            data.insert(new SingleWifiData(info.getSSID(), info.getBSSID(),
+                    "NULL",
+                    0, info.getFrequency(),
+                    System.currentTimeMillis() * 1000,
+                    0,
+                    0, 0, true));
+        }
         wifiManager.startScan();
         new Timer().schedule(new TimerTask() {
             @Override

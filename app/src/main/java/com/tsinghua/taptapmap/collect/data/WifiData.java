@@ -20,7 +20,7 @@ public class WifiData {
 
     public void insert(SingleWifiData single) {
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getBssid().equals(single.getBssid())) {
+            if (data.get(i).getBssid().equals(single.getBssid()) && data.get(i).getConnected() == single.getConnected()) {
                 data.set(i, single);
                 return;
             }

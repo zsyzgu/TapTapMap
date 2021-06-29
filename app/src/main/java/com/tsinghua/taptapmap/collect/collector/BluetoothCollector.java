@@ -24,11 +24,11 @@ public class BluetoothCollector extends Collector {
         data = new BluetoothData();
     }
 
-    private synchronized void insert(BluetoothDevice device) {
+    private synchronized void insert(BluetoothDevice device, boolean linked) {
         data.insert(new SingleBluetoothData(device.getName(), device.getAddress(),
                 device.getBondState(), device.getType(),
                 device.getBluetoothClass().getDeviceClass(),
-                device.getBluetoothClass().getMajorDeviceClass()));
+                device.getBluetoothClass().getMajorDeviceClass(), linked));
     }
 
     @Override
@@ -39,7 +39,7 @@ public class BluetoothCollector extends Collector {
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(BluetoothDevice.ACTION_FOUND)) {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    insert(device);
+                    insert(device, false);
                 }
             }
         }, bluetoothFilter);
@@ -52,7 +52,7 @@ public class BluetoothCollector extends Collector {
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device: pairedDevices) {
-                insert(device);
+                insert(device, true);
             }
         }
 

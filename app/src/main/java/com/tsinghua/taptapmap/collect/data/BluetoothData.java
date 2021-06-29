@@ -22,7 +22,7 @@ public class BluetoothData {
 
     public void insert(SingleBluetoothData single) {
         for (int i = 0; i < data.size(); i++) {
-            if (data.get(i).getName().equals(single.getName())) {
+            if (data.get(i).getName().equals(single.getName()) && data.get(i).getLinked() == single.getLinked()) {
                 data.set(i, single);
                 return;
             }

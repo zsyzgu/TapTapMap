@@ -1,5 +1,7 @@
 package com.tsinghua.taptapmap.collect.data;
 
+import com.google.gson.internal.$Gson$Preconditions;
+
 public class SingleWifiData {
     private String ssid;
     private String bssid;
@@ -12,13 +14,16 @@ public class SingleWifiData {
     private int centerFreq0;
     private int centerFreq1;
 
+    private boolean connected;
+
     public SingleWifiData(String ssid, String bssid,
                           String capabilities,
                           int level,
                           int frequency,
                           long timestamp,
                           int channelWidth,
-                          int centerFreq0, int centerFreq1) {
+                          int centerFreq0, int centerFreq1,
+                          boolean connected) {
         this.ssid = ssid;
         this.bssid = bssid;
         this.capabilities = capabilities;
@@ -28,6 +33,7 @@ public class SingleWifiData {
         this.channelWidth = channelWidth;
         this.centerFreq0 = centerFreq0;
         this.centerFreq1 = centerFreq1;
+        this.connected = connected;
     }
 
     public int getCenterFreq0() {
@@ -66,6 +72,8 @@ public class SingleWifiData {
         return ssid;
     }
 
+    public boolean getConnected() { return connected; }
+
     public void setBssid(String Bssid) {
         this.bssid = bssid;
     }
@@ -100,5 +108,9 @@ public class SingleWifiData {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
     }
 }

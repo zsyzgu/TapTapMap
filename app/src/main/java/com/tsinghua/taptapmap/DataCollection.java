@@ -45,7 +45,7 @@ public class DataCollection extends Activity {
     }
 
     private void initService() {
-        clickTrigger = new ClickTrigger(getApplicationContext(), Trigger.CollectorType.NonIMU);
+        clickTrigger = new ClickTrigger(getApplicationContext(), Trigger.CollectorType.Wifi);
         timerTrigger = new TimerTrigger(this, Trigger.CollectorType.All);
         timerTrigger.trigger();
     }
